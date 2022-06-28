@@ -1,24 +1,58 @@
-# README
+## Pundit-Blog
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A simple blog application with authentication that restricts certain parts to authorized users only.
 
-Things you may want to cover:
 
-* Ruby version
+### Overview
 
-* System dependencies
 
-* Configuration
+### Create App and Setup
 
-* Database creation
+```bash
+rails new pundit-blog -T
+```
 
-* Database initialization
+##### Add Gems
 
-* How to run the test suite
+```ruby
+gem 'bootstrap-sass'
+gem 'devise'
 
-* Services (job queues, cache servers, search engines, etc.)
+# in development, test
+gem 'pry-rails'
+gem 'pry-byebug'
+gem 'pry-theme'
+gem 'rubocop', require: false
 
-* Deployment instructions
+gem 'rspec-rails'
+gem 'factory_bot_rails'
+gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
 
-* ...
+# in test
+gem 'shoulda-matchers', '~> 5.0'
+gem 'simplecov', require: false
+gem 'database_cleaner-active_record', require: false
+```
+
+```bash
+cat >> ~/.irbrc
+IRB.conf[:USE_AUTOCOMPLETE] = false
+```
+
+The [pry-theme gem](https://github.com/kyrylo/pry-theme) adds some spice to the rails console.
+
+```ruby
+[1] pry(main)> pry-theme install vividchalk
+
+[2] pry(main)> pry-theme try vividchalk
+
+[3] pry(main)> pry-theme list
+```
+
+```bash
+cat >> .pryrc
+Pry.config.theme = 'vividchalk'
+# Pry.config.theme = 'tomorrow-night'
+# Pry.config.theme = 'pry-modern-256'
+# Pry.config.theme = 'ocean'
+```

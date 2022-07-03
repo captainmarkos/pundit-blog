@@ -284,11 +284,159 @@ bin/rails generate pundit:install
 This will generate an `app/policies` directory which contains a base class for policies. Each policy is a basic Ruby class.
 
 
+#### Create the Article Policy
 
+For now, we only want to allow registered users to create new articles.  Additionally, only creators of an article should be able to edit and delete the article.
 
+The policy will look like
+```ruby
+# app/policies/article_policy.rb
 
+class ArticlePolicy < ApplicationPolicy
+  def index?
+    true
+  end
 
+  def show?
+    true
+  end
 
+  def create?
+    user.present?
+  end
+
+  def update?
+    user.present? && user == article.user
+  end
+
+  def destroy?
+    user.present? && user == article.user
+  end
+
+  private
+
+    def article
+      record
+    end
+end
+```
+
+With this policy we are permitting everyone (registered and non-registered users) to see the index page.  To create a new article, a user has to be registered.  We use `user.present?` to find out if the user trying to perform the action is registered.
+
+For updating and deleteing we want to make sure only the user who created the article is able to perform these actions.
+
+Now we need to establish a relationship between the `Article` and the `User` models.
+
+```bash
+bin/rails generate migration add_user_id_to_articles user:references
+bin/rails db:migrate
+```
+
+Add associations
+```ruby
+# app/models/user.rb
+
+...
+  has_many :articles
+```
+
+```ruby
+# app/models/article.rb
+
+...
+  belongs_to :user
+```
+
+Now we need to update the `ArticlesController`
+```ruby
+# app/controllers/articles_controller.rb
+
+class ArticlesController < ApplicationController
+  before_action :set_article, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @articles = Article.all
+    authorize @articles
+  end
+
+  def show; end
+
+  def new
+    @article = Article.new
+    authorize @article
+  end
+
+  def edit; end
+
+  def create
+    @article = Article.new(article_params)
+    @article.user = current_user
+    authorize @article
+
+    respond_to do |format|
+      if @article.save
+        format.html { redirect_to article_url(@article), notice: "Article was successfully created." }
+        format.json { render :show, status: :created, location: @article }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @article.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def update
+    respond_to do |format|
+      if @article.update(article_params)
+        format.html { redirect_to article_url(@article), notice: "Article was successfully updated." }
+        format.json { render :show, status: :ok, location: @article }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @article.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    @article.destroy
+
+    respond_to do |format|
+      format.html { redirect_to articles_url, notice: "Article was successfully destroyed." }
+      format.json { head :no_content }
+    end
+  end
+
+  private
+
+  def set_article
+    @article = Article.find(params[:id])
+    authorize @article
+  end
+
+  def article_params
+    params.require(:article).permit(:title, :body)
+  end
+end
+```
+
+We'll want to add a standard error message that shows whenever a non-authorized user tries to access a restricted page.
+```ruby
+#app/controllers/application_controller.rb
+
+...
+
+  include Pundit
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+  private
+
+  def user_not_authorized
+    flash[:warning] = "You are not authorized to perform this action."
+    redirect_to(request.referrer || root_path)
+  end
+```
+
+Fire up the rails server and give it a spin!
 
 
 ### References

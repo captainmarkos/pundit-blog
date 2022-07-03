@@ -1,27 +1,24 @@
 class ArticlesController < ApplicationController
-  before_action :set_article, only: %i[ show edit update destroy ]
+  before_action :set_article, only: [:show, :edit, :update, :destroy]
 
-  # GET /articles or /articles.json
   def index
     @articles = Article.all
+    authorize @articles
   end
 
-  # GET /articles/1 or /articles/1.json
-  def show
-  end
+  def show; end
 
-  # GET /articles/new
   def new
     @article = Article.new
+    authorize @article
   end
 
-  # GET /articles/1/edit
-  def edit
-  end
+  def edit; end
 
-  # POST /articles or /articles.json
   def create
     @article = Article.new(article_params)
+    @article.user = current_user
+    authorize @article
 
     respond_to do |format|
       if @article.save
@@ -34,7 +31,6 @@ class ArticlesController < ApplicationController
     end
   end
 
-  # PATCH/PUT /articles/1 or /articles/1.json
   def update
     respond_to do |format|
       if @article.update(article_params)
@@ -47,7 +43,6 @@ class ArticlesController < ApplicationController
     end
   end
 
-  # DELETE /articles/1 or /articles/1.json
   def destroy
     @article.destroy
 
@@ -57,14 +52,16 @@ class ArticlesController < ApplicationController
     end
   end
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_article
-      @article = Article.find(params[:id])
-    end
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
-    # Only allow a list of trusted parameters through.
-    def article_params
-      params.require(:article).permit(:title, :body)
-    end
+  private
+
+  def set_article
+    @article = Article.find(params[:id])
+    authorize @article
+  end
+
+  def article_params
+    params.require(:article).permit(:title, :body)
+  end
 end

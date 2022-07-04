@@ -12,6 +12,9 @@ A simple blog application with authentication that restricts certain parts to au
 rails new pundit-blog -T
 ```
 
+The `-T` flag tells Rails to generate the new application without the default test suite.
+
+
 ##### Add Gems
 
 ```ruby
@@ -73,7 +76,7 @@ Now rename `app/assets/stylesheets/application.css` to `app/assets/stylesheets/a
 Create a partial named `_navigation.html.erb` to hold your navigation code; the partial should be located in `app/views/layouts directory`.
 
 ```erb
-#app/views/layouts/_navigation.html.erb
+# app/views/layouts/_navigation.html.erb
 
 <nav class="navbar navbar-inverse">
   <div class="container">
@@ -101,7 +104,7 @@ Create a partial named `_navigation.html.erb` to hold your navigation code; the 
 For the navigation to be used, you need to render it in your application layout.
 
 ```erb
-#app/views/layouts/application.html.erb
+# app/views/layouts/application.html.erb
 
 <!DOCTYPE html>
 <html>
@@ -187,6 +190,8 @@ bin/rails generate scaffold Articles title:string body:text
 
 Update `app/views/articles/_form.html.erb` to be like the following
 ```erb
+# app/views/articles/_form.html.erb
+
 <%= form_for(article) do |f| %>
   <% if article.errors.any? %>
     <div id="error_explanation">
@@ -218,6 +223,8 @@ Update `app/views/articles/_form.html.erb` to be like the following
 
 Next edit `app/views/articles/index.html.erb` to have
 ```erb
+# app/views/articles/index.html.erb
+
 <table class="table table-bordered table-striped table-condensed table-hover">
   <thead>
   <tr>
@@ -271,6 +278,8 @@ bundle install
 
 Integrate Pundit in your application by adding the following line to your `app/controllers/application_controller.rb`.
 ```ruby
+# app/controllers/application_controller.rb
+
 ...
   include Pundit
 ...
@@ -281,7 +290,7 @@ Run pundit's generator
 bin/rails generate pundit:install
 ```
 
-This will generate an `app/policies` directory which contains a base class for policies. Each policy is a basic Ruby class.
+This will generate an `app/policies` directory which contains a base class for policies in `app/policies/application_policy.rb`. Each policy is a basic Ruby class.
 
 
 #### Create the Article Policy
@@ -315,9 +324,9 @@ class ArticlePolicy < ApplicationPolicy
 
   private
 
-    def article
-      record
-    end
+  def article
+    record
+  end
 end
 ```
 
@@ -420,7 +429,7 @@ end
 
 We'll want to add a standard error message that shows whenever a non-authorized user tries to access a restricted page.
 ```ruby
-#app/controllers/application_controller.rb
+# app/controllers/application_controller.rb
 
 ...
 
@@ -436,7 +445,10 @@ We'll want to add a standard error message that shows whenever a non-authorized 
   end
 ```
 
-Fire up the rails server and give it a spin!
+Fire up the rails server, navigate to `https://localhost:3000` and give it a spin!  
+```bash
+bin/rails server
+```
 
 
 ### References
